@@ -194,6 +194,69 @@ class EmployeeApiTest {
     }
 
     @Test
+    void setTerminationDateReturns200AndTheDateIsVisibleOnLaterReads() throws Exception {
+        String uuid = uuidOf(create(VALID_EMPLOYEE));
+
+        setTerminationDate(uuid, "{ \"contractTerminationDate\": \"2025-06-30T00:00:00Z\" }")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.uuid").value(uuid))
+                .andExpect(jsonPath("$.fullName").value("Jane Smith"))
+                .andExpect(jsonPath("$.contractTerminationDate").value("2025-06-30T00:00:00Z"));
+        mockMvc.perform(get(EMPLOYEES + "/" + uuid))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contractTerminationDate").value("2025-06-30T00:00:00Z"));
+    }
+
+    @Test
+    void setTerminationDateCanBeRepeatedAndCorrected() throws Exception {
+        String uuid = uuidOf(create(VALID_EMPLOYEE));
+        String firstDate = "{ \"contractTerminationDate\": \"2025-06-30T00:00:00Z\" }";
+
+        setTerminationDate(uuid, firstDate).andExpect(status().isOk());
+        setTerminationDate(uuid, firstDate)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contractTerminationDate").value("2025-06-30T00:00:00Z"));
+        setTerminationDate(uuid, "{ \"contractTerminationDate\": \"2025-07-31T00:00:00Z\" }")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contractTerminationDate").value("2025-07-31T00:00:00Z"));
+    }
+
+    @Test
+    void setTerminationDateBeforeTheHireDateReturns400AndChangesNothing() throws Exception {
+        String uuid = uuidOf(create(VALID_EMPLOYEE));
+
+        setTerminationDate(uuid, "{ \"contractTerminationDate\": \"2020-01-01T00:00:00Z\" }")
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("contractTerminationDate must not be before contractHireDate"));
+        mockMvc.perform(get(EMPLOYEES + "/" + uuid))
+                .andExpect(jsonPath("$.contractTerminationDate").isEmpty());
+    }
+
+    @Test
+    void setTerminationDateWithoutADateReturns400NamingTheAttribute() throws Exception {
+        String uuid = uuidOf(create(VALID_EMPLOYEE));
+
+        setTerminationDate(uuid, "{}")
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.contractTerminationDate").value("must not be null"));
+    }
+
+    @Test
+    void setTerminationDateForAnUnknownUuidReturns404() throws Exception {
+        setTerminationDate(
+                        "00000000-0000-0000-0000-000000000000",
+                        "{ \"contractTerminationDate\": \"2025-06-30T00:00:00Z\" }")
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void setTerminationDateForAMalformedUuidReturns400() throws Exception {
+        setTerminationDate("not-a-uuid", "{ \"contractTerminationDate\": \"2025-06-30T00:00:00Z\" }")
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void logsIdentifyTheEmployeeByUuidAndNeverContainPersonalData(CapturedOutput output) throws Exception {
         String body = VALID_EMPLOYEE
                 .replace("Jane", "Zebediah")
@@ -211,6 +274,12 @@ class EmployeeApiTest {
     private ResultActions create(String body) throws Exception {
         return mockMvc.perform(
                 post(EMPLOYEES).contentType(MediaType.APPLICATION_JSON).content(body));
+    }
+
+    private ResultActions setTerminationDate(String uuid, String body) throws Exception {
+        return mockMvc.perform(put(EMPLOYEES + "/" + uuid + "/termination-date")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body));
     }
 
     private static String uuidOf(ResultActions created) throws Exception {
