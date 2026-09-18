@@ -8,8 +8,10 @@ import com.challenge.api.repository.EmployeeRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmployeeService {
@@ -17,7 +19,9 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
 
     public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
+        List<Employee> employees = employeeRepository.findAll();
+        log.debug("Returning {} employees", employees.size());
+        return employees;
     }
 
     /**
@@ -42,6 +46,8 @@ public class EmployeeService {
         employee.setEmail(request.getEmail());
         employee.setContractHireDate(request.getContractHireDate());
         employee.setContractTerminationDate(request.getContractTerminationDate());
-        return employeeRepository.save(employee);
+        employeeRepository.save(employee);
+        log.info("Created employee uuid={}", employee.getUuid());
+        return employee;
     }
 }

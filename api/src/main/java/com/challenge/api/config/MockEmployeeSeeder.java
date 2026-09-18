@@ -4,6 +4,7 @@ import com.challenge.api.dto.CreateEmployeeRequest;
 import com.challenge.api.service.EmployeeService;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
  * Populates the in-memory store with mock Employees at startup, standing in for the existing employee data a real
  * persistence layer would hold. Goes through the Service so mock Employees are built exactly like real ones.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class MockEmployeeSeeder implements ApplicationRunner {
@@ -26,6 +28,7 @@ public class MockEmployeeSeeder implements ApplicationRunner {
                 mockRequest("Grace", "Hopper", 135_000, 52, "Engineering Director", "2015-06-15T00:00:00Z", null));
         employeeService.createEmployee(mockRequest(
                 "Alan", "Turing", 98_000, 41, "Security Analyst", "2017-09-04T00:00:00Z", "2023-12-31T00:00:00Z"));
+        log.info("Seeded {} mock employees", employeeService.getAllEmployees().size());
     }
 
     private static CreateEmployeeRequest mockRequest(

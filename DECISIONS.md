@@ -62,12 +62,23 @@ So now we have our employee class implemented, unit tests proving the class work
 
 For our implementation we need a way to store our employees...
 We have created EmployeeRepository.java at  /api/src/main/java/com/challenge/api/repository
-- this file allows us to abstract the contact with the dict mapping our employee id to the proper employee objects
+- this file allows us to abstract the contact with the map:  mapping our employee id to the proper employee objects
 
 We also need a way to access this map which leads us to the employee service...
 We have created EmployeeService.java at  /api/src/main/java/com/challenge/api/service
 - this is our controllers access to the repository
 - this also creates our UUIDs, builds our employee objects, and decides unknown UUID means "Not Found"
+
+Design decisions here:
+- POST returns 201 Created
+- Unknown UUID returns 404
+- Malformed UUID returns 400
+
+Next we added error handling and logging...
+
+We created GlobalExceptionHandler.java so every error goes through one place and comes back in the same standard format (ProblemDetail, which is built into Spring), and a 400 tells the caller exactly which attributes were wrong. 
+
+For logging we used SLF4J through Lombok's @Slf4j since it is already in the project: we log creates at INFO, rejected requests at WARN and unexpected errors at ERROR, and we only ever log UUIDs and attribute names, never personal data like salary or email.
 
 
 Additional endpoint:
