@@ -42,11 +42,28 @@ So we must expose some endpoints to each our db.
 
 Three specified endpoints are getAllEmployees, getEmployeeByUuid, and createEmployee. 
 
-Some things that are missing could be to exit an existing employee (PUT) or delete and employee (DELETE)... 
+
+Considerations: 
+
+Some things that are missing could be to edit an existing employee (PUT) or delete and employee (DELETE)... 
 
 I also think we could make a better getEmployee request... The current GET method can only grab all employees or one employee with their specific Uuid.. So maybe we could make another ednpoint to expose more parameters like name, job title, salary, email.
 
 ## Design
+First, we need to create the Employee class which implements the Employee interface.
+
+Created EmployeeImpl.java which creates the EmployeeImpl clas. We declared all the nvariables for the getters and setters here. One design decision here is to create a variable for full name. Or just combine the first and last name to get the full name. Here we chose to not hold the full name as a variable because we would then have to parse and edit it if we had a change in the first or last name, so it is more simple to get first and last name in the full name field.
+
 We will begin by implementing the three required endpoints. 
+
+
+
+
+
+
+Additional endpoint:
+Looking at the employee interface we can see that there is a setContractTerminationDate, so we should hand off an endpoint for Employees-R-US to reach this.
+
+
 
 
