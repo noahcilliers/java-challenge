@@ -1,10 +1,8 @@
 package com.challenge.api.exception;
 
 import java.util.UUID;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.NOT_FOUND)
+/** Translated into a 404 by {@link GlobalExceptionHandler}, which keeps the Service layer free of HTTP concerns. */
 public class EmployeeNotFoundException extends RuntimeException {
 
     public EmployeeNotFoundException(UUID uuid) {
