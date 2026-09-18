@@ -52,11 +52,11 @@ I also think we could make a better getEmployee request... The current GET metho
 ## Design
 First, we need to create the Employee class which implements the Employee interface.
 
-Created EmployeeImpl.java which creates the EmployeeImpl clas. We declared all the nvariables for the getters and setters here. One design decision here is to create a variable for full name. Or just combine the first and last name to get the full name. Here we chose to not hold the full name as a variable because we would then have to parse and edit it if we had a change in the first or last name, so it is more simple to get first and last name in the full name field.
+Created EmployeeImpl.java which creates the EmployeeImpl clas. We declared all the variables for the getters and setters here. One design decision here is to create a variable for full name. Or just combine the first and last name to get the full name. Here we chose to not hold the full name as a variable because we would then have to parse and edit it if we had a change in the first or last name, so it is more simple to get first and last name in the full name field.
 
-We will begin by implementing the three required endpoints. 
+Now we can create a validator to include on our HTTP requests. This will help us ensure that for our endpoints the proper parameters are passed. We could have done this manually, but the Spring Boot starter validator allows us to modularize our code.
 
-
+We also have created some unit tests of our own to make sure our code behaves as expected
 
 
 
