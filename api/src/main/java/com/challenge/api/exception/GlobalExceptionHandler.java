@@ -32,6 +32,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
+    @ExceptionHandler(InvalidTerminationDateException.class)
+    public ProblemDetail handleInvalidTerminationDate(InvalidTerminationDateException exception) {
+        log.warn("Request rejected: status=400 cause={}", exception.getMessage());
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
     /** Anything unforeseen: full stack trace to the log, nothing about internals to the caller. */
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpected(Exception exception) {

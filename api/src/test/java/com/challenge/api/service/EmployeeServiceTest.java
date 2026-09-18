@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.challenge.api.dto.CreateEmployeeRequest;
+import com.challenge.api.dto.TerminationDateRequest;
 import com.challenge.api.exception.EmployeeNotFoundException;
+import com.challenge.api.exception.InvalidTerminationDateException;
 import com.challenge.api.model.Employee;
 import com.challenge.api.repository.EmployeeRepository;
 import java.time.Instant;
@@ -84,6 +86,66 @@ class EmployeeServiceTest {
         Employee second = employeeService.createEmployee(validRequest("John", "Doe"));
 
         assertThat(employeeService.getAllEmployees()).containsExactlyInAnyOrder(first, second);
+    }
+
+    @Test
+    void setTerminationDateStoresTheDateAndKeepsTheEmployee() {
+        Employee created = employeeService.createEmployee(validRequest("Jane", "Smith"));
+
+        Employee updated =
+                employeeService.setTerminationDate(created.getUuid(), terminationOn(HIRE_DATE.plusSeconds(60)));
+
+        assertThat(updated.getContractTerminationDate()).isEqualTo(HIRE_DATE.plusSeconds(60));
+        assertThat(employeeService.getEmployeeByUuid(created.getUuid()).getContractTerminationDate())
+                .isEqualTo(HIRE_DATE.plusSeconds(60));
+        assertThat(employeeService.getAllEmployees()).containsExactly(created);
+    }
+
+    @Test
+    void setTerminationDateAcceptsTheHireDateItself() {
+        Employee created = employeeService.createEmployee(validRequest("Jane", "Smith"));
+
+        Employee updated = employeeService.setTerminationDate(created.getUuid(), terminationOn(HIRE_DATE));
+
+        assertThat(updated.getContractTerminationDate()).isEqualTo(HIRE_DATE);
+    }
+
+    @Test
+    void setTerminationDateIsIdempotentAndALaterDateReplacesTheEarlierOne() {
+        UUID uuid =
+                employeeService.createEmployee(validRequest("Jane", "Smith")).getUuid();
+
+        employeeService.setTerminationDate(uuid, terminationOn(HIRE_DATE.plusSeconds(60)));
+        employeeService.setTerminationDate(uuid, terminationOn(HIRE_DATE.plusSeconds(60)));
+        assertThat(employeeService.getEmployeeByUuid(uuid).getContractTerminationDate())
+                .isEqualTo(HIRE_DATE.plusSeconds(60));
+
+        employeeService.setTerminationDate(uuid, terminationOn(HIRE_DATE.plusSeconds(120)));
+        assertThat(employeeService.getEmployeeByUuid(uuid).getContractTerminationDate())
+                .isEqualTo(HIRE_DATE.plusSeconds(120));
+    }
+
+    @Test
+    void setTerminationDateRejectsADateBeforeTheHireDateAndChangesNothing() {
+        UUID uuid =
+                employeeService.createEmployee(validRequest("Jane", "Smith")).getUuid();
+
+        assertThatThrownBy(() -> employeeService.setTerminationDate(uuid, terminationOn(HIRE_DATE.minusSeconds(1))))
+                .isInstanceOf(InvalidTerminationDateException.class);
+        assertThat(employeeService.getEmployeeByUuid(uuid).getContractTerminationDate())
+                .isNull();
+    }
+
+    @Test
+    void setTerminationDateThrowsWhenNoEmployeeHasThatUuid() {
+        assertThatThrownBy(() -> employeeService.setTerminationDate(UUID.randomUUID(), terminationOn(HIRE_DATE)))
+                .isInstanceOf(EmployeeNotFoundException.class);
+    }
+
+    private static TerminationDateRequest terminationOn(Instant date) {
+        TerminationDateRequest request = new TerminationDateRequest();
+        request.setContractTerminationDate(date);
+        return request;
     }
 
     private static CreateEmployeeRequest validRequest(String firstName, String lastName) {

@@ -35,7 +35,7 @@ answers.
 > what would make you revisit it? Scope you declined on purpose is not a gap.
 
 
-
+## Notes
 
 ## Requirements
 So we must expose some endpoints to each our db. 
@@ -82,8 +82,12 @@ For logging we used SLF4J through Lombok's @Slf4j since it is already in the pro
 
 
 Additional endpoint:
-Looking at the employee interface we can see that there is a setContractTerminationDate, so we should hand off an endpoint for Employees-R-US to reach this.
 
+The existing three endpoints are getting employee information or creating an employee.. This works well, but we aren't surfacing any way to update employees after creation. What specific endpoint would Employees R US be looking to change? Since they are our new employee management system they need a way to "terminate" employees. Since the employees live in our system and we leave the termination to another service we can just allow them to update (PUT) the termination date for an Employee
+
+The endpoint is PUT /api/v1/employee/{uuid}/termination-date with a body of { "contractTerminationDate": "..." }, and it returns 200 with the updated employee. We chose PUT because it is idempotent: web hooks retry, so if Employees-R-US sends the same request twice the result is the same, and sending a different date just replaces the old one (a correction). The employee is never removed, we only set the field, because the Employee interface itself says a null termination date means "not terminated".
+
+The date is required in the body instead of defaulting to now, since the caller knows the real date and it could be backdated or in the future. A date before the hire date returns 400, but unlike on create this check lives in EmployeeService (InvalidTerminationDateException) because the hire date is in our store and not in the request. Unknown UUID is 404 and a malformed UUID is 400, the same as the GET endpoint.
 
 
 
