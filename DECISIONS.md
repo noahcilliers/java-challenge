@@ -54,11 +54,20 @@ First, we need to create the Employee class which implements the Employee interf
 
 Created EmployeeImpl.java which creates the EmployeeImpl clas. We declared all the variables for the getters and setters here. One design decision here is to create a variable for full name. Or just combine the first and last name to get the full name. Here we chose to not hold the full name as a variable because we would then have to parse and edit it if we had a change in the first or last name, so it is more simple to get first and last name in the full name field.
 
-Now we can create a validator to include on our HTTP requests. This will help us ensure that for our endpoints the proper parameters are passed. We could have done this manually, but the Spring Boot starter validator allows us to modularize our code.
+Now we can create a validator to include on our HTTP requests. This will help us ensure that for our endpoints the proper parameters are passed. We could have done this manually, but the Spring Boot starter validator allows us to simplyify our code.
 
 We also have created some unit tests of our own to make sure our code behaves as expected
 
+So now we have our employee class implemented, unit tests proving the class works properly, and our validator set up. So we can now move into the actual http implementation.
 
+For our implementation we need a way to store our employees...
+We have created EmployeeRepository.java at  /api/src/main/java/com/challenge/api/repository
+- this file allows us to abstract the contact with the dict mapping our employee id to the proper employee objects
+
+We also need a way to access this map which leads us to the employee service...
+We have created EmployeeService.java at  /api/src/main/java/com/challenge/api/service
+- this is our controllers access to the repository
+- this also creates our UUIDs, builds our employee objects, and decides unknown UUID means "Not Found"
 
 
 Additional endpoint:
